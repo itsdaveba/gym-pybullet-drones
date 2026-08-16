@@ -26,7 +26,9 @@ cd gym-pybullet-drones/
 conda create -n drones python=3.12
 conda activate drones
 
-pip3 install -e . # if needed, `sudo apt install build-essential` to install `gcc` and build `pybullet`
+# on Ubuntu, run `sudo apt install build-essential` to install `gcc` to build `pybullet`
+# on macOS, run `CFLAGS="-Dfdopen=fdopen" pip install pybullet --no-cache-dir` to build `pybullet`
+pip3 install -e .
 
 # check installed packages with `conda list`, deactivate with `conda deactivate`, remove with `conda remove -n drones --all`
 ```
@@ -37,9 +39,9 @@ pip3 install -e . # if needed, `sudo apt install build-essential` to install `gc
 
 ```sh
 cd gym_pybullet_drones/examples/
-python3 pid.py # position and velocity reference
-python3 pid_velocity.py # desired velocity reference
-python3 mrac.py # adaptive controller example
+python3 pid.py
+python3 pid_velocity.py
+python3 mrac.py
 ```
 
 ### Downwash effect example
@@ -54,13 +56,13 @@ python3 downwash.py
 ```sh
 cd gym_pybullet_drones/examples/
 
-# single agent
-python learn.py # task: single drone hover at z == 1.0
-LATEST_MODEL=$(ls -t results | head -n 1) && python play.py --model_path "results/${LATEST_MODEL}/best_model.zip" # play and visualize the most recent learned policy after training
+# single agent, task: single drone hover at z == 1.0
+python learn.py
+LATEST_MODEL=$(ls -t results | head -n 1) && python play.py --model_path "results/${LATEST_MODEL}/best_model.zip"
 
-# multi-agent
-python learn.py --multiagent true # task: 2-drone hover at z == 1.2 and 0.7
-LATEST_MODEL=$(ls -t results | head -n 1) && python play.py --multiagent true --model_path "results/${LATEST_MODEL}/best_model.zip" # play and visualize the most recent learned policy after training
+# multi-agent, task: 2-drone hover at z == 1.2 and 0.7
+python learn.py --multiagent true
+LATEST_MODEL=$(ls -t results | head -n 1) && python play.py --multiagent true --model_path "results/${LATEST_MODEL}/best_model.zip"
 ```
 
 <img src="gym_pybullet_drones/assets/rl.gif" alt="rl example" width="375"> <img src="gym_pybullet_drones/assets/marl.gif" alt="marl example" width="375">
@@ -76,13 +78,14 @@ pytest tests/
 ### Betaflight SITL example (Ubuntu only)
 
 ```sh
-# one-time setup: from the repo's top folder, build one SITL executable per drone (e.g. 2)
+# one-time setup: from the repo's top folder, build one SITL executable per drone (e.g. 2), if needed, `apt install curl`
 cd gym-pybullet-drones/
-./gym_pybullet_drones/assets/clone_bfs.sh 2 # if needed, `apt install curl`
+./gym_pybullet_drones/assets/clone_bfs.sh 2
 
 # run the example
 cd gym_pybullet_drones/examples/
-python3 beta.py --num_drones 2 # must be <= the number passed to clone_bfs.sh
+python3 beta.py --num_drones 2
+# --num_drones must be <= the number passed to clone_bfs.sh
 ```
 
 ## Citation
