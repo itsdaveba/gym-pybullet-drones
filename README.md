@@ -7,23 +7,23 @@
 
 # gym-pybullet-drones
 
-This is a minimalist refactoring of the original `gym-pybullet-drones` repository, designed for compatibility with [`gymnasium`](https://github.com/Farama-Foundation/Gymnasium), [`stable-baselines3` 2.0](https://github.com/DLR-RM/stable-baselines3/pull/1327), and [`betaflight`](https://github.com/betaflight/betaflight)/[`crazyflie-firmware`](https://github.com/bitcraze/crazyflie-firmware/) SITL.
+This is a minimalist refactoring of the original `gym-pybullet-drones` repository, designed for compatibility with [`gymnasium`](https://github.com/Farama-Foundation/Gymnasium), [`stable-baselines3` 2.0](https://github.com/DLR-RM/stable-baselines3/pull/1327), and [`betaflight`](https://github.com/betaflight/betaflight) SITL.
 
 > **NEWS**: `gym-pybullet-drones` was featured in [GitHub's Maintainer Spotlight 2026](https://maintainermonth.github.com/academia/gym-pybullet-drones-maintainer-spotlight)
 
-> **NOTE**: if you want to access the original codebase, presented at IROS in 2021, please `git checkout [paper|master]`
+> **NOTE**: if you want to access the original IROS 2021 codebase, please `git checkout [paper|master]`
 
 <img src="gym_pybullet_drones/assets/helix.gif" alt="formation flight" width="325"> <img src="gym_pybullet_drones/assets/helix.png" alt="control info" width="425">
 
 ## Installation
 
-Tested on Intel x64/Ubuntu 22.04 and Apple Silicon/macOS 26.2.
+Tested on Intel x64/Ubuntu 24.04 and Apple Silicon/macOS 26.
 
 ```sh
 git clone https://github.com/learnsyslab/gym-pybullet-drones.git
 cd gym-pybullet-drones/
 
-conda create -n drones python=3.10
+conda create -n drones python=3.12
 conda activate drones
 
 pip3 install -e . # if needed, `sudo apt install build-essential` to install `gcc` and build `pybullet`
@@ -33,12 +33,13 @@ pip3 install -e . # if needed, `sudo apt install build-essential` to install `gc
 
 ## Use
 
-### PID control examples
+### Control examples
 
 ```sh
 cd gym_pybullet_drones/examples/
 python3 pid.py # position and velocity reference
 python3 pid_velocity.py # desired velocity reference
+python3 mrac.py # adaptive controller example
 ```
 
 ### Downwash effect example
@@ -52,10 +53,14 @@ python3 downwash.py
 
 ```sh
 cd gym_pybullet_drones/examples/
-python learn.py # task: single drone hover at z == 1.0
-python learn.py --multiagent true # task: 2-drone hover at z == 1.2 and 0.7
 
+# single agent
+python learn.py # task: single drone hover at z == 1.0
 LATEST_MODEL=$(ls -t results | head -n 1) && python play.py --model_path "results/${LATEST_MODEL}/best_model.zip" # play and visualize the most recent learned policy after training
+
+# multi-agent
+python learn.py --multiagent true # task: 2-drone hover at z == 1.2 and 0.7
+LATEST_MODEL=$(ls -t results | head -n 1) && python play.py --multiagent true --model_path "results/${LATEST_MODEL}/best_model.zip" # play and visualize the most recent learned policy after training
 ```
 
 <img src="gym_pybullet_drones/assets/rl.gif" alt="rl example" width="375"> <img src="gym_pybullet_drones/assets/marl.gif" alt="marl example" width="375">
@@ -71,30 +76,13 @@ pytest tests/
 ### Betaflight SITL example (Ubuntu only)
 
 ```sh
-git clone https://github.com/betaflight/betaflight 
-cd betaflight/
-git checkout cafe727 # `master` branch head at the time of writing (future release 4.5)
-make arm_sdk_install # if needed, `apt install curl``
-make TARGET=SITL # comment out line: https://github.com/betaflight/betaflight/blob/master/src/main/main.c#L52
-cp ~/gym-pybullet-drones/gym_pybullet_drones/assets/eeprom.bin ~/betaflight/ # assuming both gym-pybullet-drones/ and betaflight/ were cloned in ~/
-betaflight/obj/main/betaflight_SITL.elf
-```
+# one-time setup: from the repo's top folder, build one SITL executable per drone (e.g. 2)
+cd gym-pybullet-drones/
+./gym_pybullet_drones/assets/clone_bfs.sh 2 # if needed, `apt install curl`
 
-In another terminal, run the example
-
-```sh
-conda activate drones
+# run the example
 cd gym_pybullet_drones/examples/
-python3 beta.py --num_drones 1 # check the steps in the file's docstrings to use multiple drones
-```
-
-### `pycffirmware` Python Bindings example (multiplatform, single-drone)
-
-First, install [`pycffirmware`](https://github.com/learnsyslab/pycffirmware?tab=readme-ov-file#installation) for Ubuntu, macOS, or Windows, then
-
-```sh
-cd gym_pybullet_drones/examples/
-python3 cf.py
+python3 beta.py --num_drones 2 # must be <= the number passed to clone_bfs.sh
 ```
 
 ## Citation
@@ -131,9 +119,8 @@ If you wish, please cite our [IROS 2021 paper](https://arxiv.org/abs/2103.02142)
 > UTIAS / [Learning Systems and Robotics Lab](https://github.com/learnsyslab) / [Vector Institute](https://github.com/VectorInstitute) / University of Cambridge's [Prorok Lab](https://github.com/proroklab)
 
 <!--
-## WIP/Desired Contributions/PRs
+## TODOs
 
-- [ ] Multi-drone `crazyflie-firmware` SITL support
 - [ ] Use SITL services with steppable simulation
 - [ ] Add motor delay, advanced ESC modeling by implementing a buffer in `BaseAviary._dynamics()`
 - [ ] Replace `rpy` with quaternions (and `ang_vel` with body rates) by editing `BaseAviary._updateAndStoreKinematicInformation()`, `BaseAviary._getDroneStateVector()`, and the `.computeObs()` methods of relevant subclasses

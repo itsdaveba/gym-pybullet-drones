@@ -5,6 +5,7 @@ import struct
 import os
 import subprocess
 import time
+import shutil
 
 from transforms3d.quaternions import rotate_vector, qconjugate
 
@@ -82,11 +83,16 @@ class BetaAviary(BaseAviary):
                          output_folder=output_folder
                          )
         
-        # Spawn SITL Betaflight instances (must have been created with assets/clone_bfs/sh first)
+        # Spawn SITL Betaflight instances (must have been created with assets/clone_bfs.sh first)
         for i in range(num_drones):
             FOLDER = os.path.dirname(os.path.abspath(__file__))+'/../../betaflight_sitl/bf'+str(i)+'/'
-            cmd = f"gnome-terminal -- bash -c 'cd {FOLDER} && ./obj/main/betaflight_SITL.elf; exec bash'"
-            subprocess.Popen(cmd, shell=True)
+            if not os.path.isdir(FOLDER):
+                raise FileNotFoundError(f"{FOLDER} not found: run assets/clone_bfs.sh {num_drones} first")
+            if shutil.which("gnome-terminal"):
+                cmd = f"gnome-terminal -- bash -c 'cd {FOLDER} && ./obj/main/betaflight_SITL.elf; exec bash'"
+                subprocess.Popen(cmd, shell=True)
+            else:
+                subprocess.Popen(["./obj/main/betaflight_SITL.elf"], cwd=FOLDER, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
         time.sleep(2)
         
         # Initialize connection to BetaFlight Controller 
