@@ -9,6 +9,11 @@ from gym_pybullet_drones.utils.enums import DroneModel
 class DSLPIDControl(BaseControl):
     """PID control class for Crazyflies.
 
+    This is a cascaded position and attitude controller. The ``target_rpy_rates``
+    input is interpreted as roll, pitch, and yaw Euler-angle rates in rad/s and
+    is used by the derivative term of the attitude PID. It is not a body-rate
+    (p, q, r) or ACRO command interface, and ``cur_ang_vel`` is currently unused.
+
     Based on work conducted at UTIAS' DSL. Contributors: SiQi Zhou, James Xu, 
     Tracy Du, Mario Vukosavljev, Calvin Ngan, and Jingyuan Hou.
 
@@ -114,7 +119,10 @@ class DSLPIDControl(BaseControl):
         target_vel : ndarray, optional
             (3,1)-shaped array of floats containing the desired velocity.
         target_rpy_rates : ndarray, optional
-            (3,1)-shaped array of floats containing the desired roll, pitch, and yaw rates.
+            (3,1)-shaped array containing desired roll, pitch, and yaw
+            Euler-angle rates in rad/s. These rates are used by the derivative
+            term of the attitude PID; they are not body angular rates (p, q, r)
+            and do not replace the attitude loop.
 
         Returns
         -------
@@ -229,7 +237,9 @@ class DSLPIDControl(BaseControl):
         target_euler : ndarray
             (3,1)-shaped array of floats containing the computed target Euler angles.
         target_rpy_rates : ndarray
-            (3,1)-shaped array of floats containing the desired roll, pitch, and yaw rates.
+            (3,1)-shaped array containing desired roll, pitch, and yaw
+            Euler-angle rates in rad/s. They are compared with finite-difference
+            Euler rates and contribute through the derivative attitude term.
 
         Returns
         -------
@@ -244,6 +254,8 @@ class DSLPIDControl(BaseControl):
         target_rotation = (Rotation.from_quat([w, x, y, z])).as_matrix()
         rot_matrix_e = np.dot((target_rotation.transpose()),cur_rotation) - np.dot(cur_rotation.transpose(),target_rotation)
         rot_e = np.array([rot_matrix_e[2, 1], rot_matrix_e[0, 2], rot_matrix_e[1, 0]]) 
+        # PyBullet Euler angles are in radians, so this finite difference is in
+        # rad/s. These are Euler-angle rates, not body angular rates (p, q, r).
         rpy_rates_e = target_rpy_rates - (cur_rpy - self.last_rpy)/control_timestep
         self.last_rpy = cur_rpy
         self.integral_rpy_e = self.integral_rpy_e - rot_e*control_timestep
