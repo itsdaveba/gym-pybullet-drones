@@ -418,7 +418,7 @@ class BaseAviary(gym.Env):
         """
         if self.RECORD and self.GUI:
             p.stopStateLogging(self.VIDEO_ID, physicsClientId=self.CLIENT)
-        p.disconnect(physicsClientId=self.CLIENT)
+        # p.disconnect(physicsClientId=self.CLIENT)
     
     ################################################################################
 
