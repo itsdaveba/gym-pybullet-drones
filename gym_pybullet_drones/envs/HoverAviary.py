@@ -10,6 +10,7 @@ class HoverAviary(BaseRLAviary):
     
     def __init__(self,
                  drone_model: DroneModel=DroneModel.CF2X,
+                 num_drones: int = 1,
                  initial_xyzs=None,
                  initial_rpys=None,
                  target_pos=None,
@@ -53,7 +54,7 @@ class HoverAviary(BaseRLAviary):
         self.TARGET_POS = np.array([0,0,1]) if target_pos is None else target_pos
         self.EPISODE_LEN_SEC = 8
         super().__init__(drone_model=drone_model,
-                         num_drones=1,
+                         num_drones=num_drones,
                          initial_xyzs=initial_xyzs,
                          initial_rpys=initial_rpys,
                          initial_spawn=initial_spawn,
@@ -77,8 +78,10 @@ class HoverAviary(BaseRLAviary):
             The reward.
 
         """
-        state = self._getDroneStateVector(0)
-        ret = max(0, 2 - np.linalg.norm(self.TARGET_POS-state[0:3])**4)
+        state = np.array([self._getDroneStateVector(i) for i in range(self.NUM_DRONES)])
+        ret = 1.0 - np.linalg.norm(self.TARGET_POS - state[:, 0:3], axis=1)
+        if self.NUM_DRONES == 1:
+            return ret[0]
         return ret
 
     ################################################################################
@@ -92,11 +95,9 @@ class HoverAviary(BaseRLAviary):
             Whether the current episode is done.
 
         """
-        state = self._getDroneStateVector(0)
-        if np.linalg.norm(self.TARGET_POS-state[0:3]) < .0001:
-            return True
-        else:
+        if self.NUM_DRONES == 1:
             return False
+        return [False] * self.NUM_DRONES
         
     ################################################################################
     
@@ -109,15 +110,20 @@ class HoverAviary(BaseRLAviary):
             Whether the current episode timed out.
 
         """
-        state = self._getDroneStateVector(0)
-        if (abs(state[0]) > 1.5 or abs(state[1]) > 1.5 or state[2] > 2.0 # Truncate when the drone is too far away
-             or abs(state[7]) > .4 or abs(state[8]) > .4 # Truncate when the drone is too tilted
-        ):
-            return True
-        if self.step_counter/self.PYB_FREQ > self.EPISODE_LEN_SEC:
-            return True
-        else:
-            return False
+        ret = []
+        for i in range(self.NUM_DRONES):
+            state = self._getDroneStateVector(i)
+            if (abs(state[0]) > 1.5 or abs(state[1]) > 1.5 or state[2] > 2.0 # Truncate when the drone is too far away
+                or abs(state[7]) > .4 or abs(state[8]) > .4 # Truncate when the drone is too tilted
+            ):
+                ret.append(True)
+            if self.step_counter/self.PYB_FREQ > self.EPISODE_LEN_SEC:
+                ret.append(True)
+            else:
+                ret.append(False)
+        if self.NUM_DRONES == 1:
+            return ret[0]
+        return ret
 
     ################################################################################
     

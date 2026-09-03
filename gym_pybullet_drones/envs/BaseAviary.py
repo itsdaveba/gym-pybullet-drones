@@ -494,6 +494,8 @@ class BaseAviary(gym.Env):
                                               flags = p.URDF_USE_INERTIA_FROM_FILE,
                                               physicsClientId=self.CLIENT
                                               ) for i in range(self.NUM_DRONES)])
+        for i in range(self.NUM_DRONES):
+            p.setCollisionFilterGroupMask(self.DRONE_IDS[i], -1, 0, 0)
         #### Remove default damping #################################
         # for i in range(self.NUM_DRONES):
         #     p.changeDynamics(self.DRONE_IDS[i], -1, linearDamping=0, angularDamping=0)
