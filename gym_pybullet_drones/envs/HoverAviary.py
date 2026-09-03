@@ -12,6 +12,8 @@ class HoverAviary(BaseRLAviary):
                  drone_model: DroneModel=DroneModel.CF2X,
                  initial_xyzs=None,
                  initial_rpys=None,
+                 target_pos=None,
+                 initial_spawn=None,
                  physics: Physics=Physics.PYB,
                  pyb_freq: int = 240,
                  ctrl_freq: int = 30,
@@ -48,12 +50,13 @@ class HoverAviary(BaseRLAviary):
             The type of action space (1 or 3D; RPMS, thurst and torques, or waypoint with PID control)
 
         """
-        self.TARGET_POS = np.array([0,0,1])
+        self.TARGET_POS = np.array([0,0,1]) if target_pos is None else target_pos
         self.EPISODE_LEN_SEC = 8
         super().__init__(drone_model=drone_model,
                          num_drones=1,
                          initial_xyzs=initial_xyzs,
                          initial_rpys=initial_rpys,
+                         initial_spawn=initial_spawn,
                          physics=physics,
                          pyb_freq=pyb_freq,
                          ctrl_freq=ctrl_freq,

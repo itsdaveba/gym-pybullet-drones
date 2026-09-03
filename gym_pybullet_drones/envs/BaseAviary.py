@@ -28,6 +28,7 @@ class BaseAviary(gym.Env):
                  neighbourhood_radius: float=np.inf,
                  initial_xyzs=None,
                  initial_rpys=None,
+                 initial_spawn=None,
                  physics: Physics=Physics.PYB,
                  pyb_freq: int = 240,
                  ctrl_freq: int = 240,
@@ -205,6 +206,10 @@ class BaseAviary(gym.Env):
             self.INIT_RPYS = initial_rpys
         else:
             print("[ERROR] invalid initial_rpys in BaseAviary.__init__(), try initial_rpys.reshape(NUM_DRONES,3)")
+        if initial_spawn is None:
+            self.INIT_SPAWN = 1.0
+        else:
+            self.INIT_SPAWN = initial_spawn
         #### Create action and observation spaces ##################
         self.action_space = self._actionSpace()
         self.observation_space = self._observationSpace()
@@ -484,7 +489,7 @@ class BaseAviary(gym.Env):
         self.PLANE_ID = p.loadURDF("plane.urdf", physicsClientId=self.CLIENT)
 
         self.DRONE_IDS = np.array([p.loadURDF(str(files('gym_pybullet_drones') / 'assets' / self.URDF),
-                                              self.INIT_XYZS[i,:],
+                                              self.TARGET_POS + np.random.uniform(-self.INIT_SPAWN, self.INIT_SPAWN, 3),
                                               p.getQuaternionFromEuler(self.INIT_RPYS[i,:]),
                                               flags = p.URDF_USE_INERTIA_FROM_FILE,
                                               physicsClientId=self.CLIENT
