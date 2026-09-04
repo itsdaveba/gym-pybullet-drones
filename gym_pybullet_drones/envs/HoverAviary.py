@@ -21,7 +21,8 @@ class HoverAviary(BaseRLAviary):
                  gui=False,
                  record=False,
                  obs: ObservationType=ObservationType.KIN,
-                 act: ActionType=ActionType.RPM
+                 act: ActionType=ActionType.RPM,
+                 mass=None
                  ):
         """Initialization of a single agent RL environment.
 
@@ -64,7 +65,8 @@ class HoverAviary(BaseRLAviary):
                          gui=gui,
                          record=record,
                          obs=obs,
-                         act=act
+                         act=act,
+                         mass=mass
                          )
 
     ################################################################################
