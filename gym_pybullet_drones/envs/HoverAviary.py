@@ -115,7 +115,7 @@ class HoverAviary(BaseRLAviary):
         ret = []
         for i in range(self.NUM_DRONES):
             state = self._getDroneStateVector(i)
-            if (abs(state[0]) > 1.5 or abs(state[1]) > 1.5 or state[2] > 2.0 # Truncate when the drone is too far away
+            if (abs(state[0]) > 1.5 or abs(state[1]) > 1.5 or state[2] < 0.0 or state[2] > 2.0 # Truncate when the drone is too far away
                 or abs(state[7]) > .4 or abs(state[8]) > .4 # Truncate when the drone is too tilted
             ):
                 ret.append(True)
