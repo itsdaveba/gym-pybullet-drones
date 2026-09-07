@@ -358,7 +358,7 @@ class Logger(object):
         if pwm:
             axs[row, col].set_ylabel('PWM0')
         else:
-            axs[row, col].set_ylabel('RPM0')
+            axs[row, col].set_ylabel('ROLL')
             axs[row, col].set_ylim([-1.0, 1.0])
         row = 7
         for j in range(self.NUM_DRONES):
@@ -367,7 +367,7 @@ class Logger(object):
         if pwm:
             axs[row, col].set_ylabel('PWM1')
         else:
-            axs[row, col].set_ylabel('RPM1')
+            axs[row, col].set_ylabel('PITCH')
             axs[row, col].set_ylim([-1.0, 1.0])
         row = 8
         for j in range(self.NUM_DRONES):
@@ -376,7 +376,7 @@ class Logger(object):
         if pwm:
             axs[row, col].set_ylabel('PWM2')
         else:
-            axs[row, col].set_ylabel('RPM2')
+            axs[row, col].set_ylabel('YAW')
             axs[row, col].set_ylim([-1.0, 1.0])
         row = 9
         for j in range(self.NUM_DRONES):
@@ -385,7 +385,7 @@ class Logger(object):
         if pwm:
             axs[row, col].set_ylabel('PWM3')
         else:
-            axs[row, col].set_ylabel('RPM3')
+            axs[row, col].set_ylabel('THRUST')
             axs[row, col].set_ylim([-1.0, 1.0])
 
         #### Drawing options #######################################

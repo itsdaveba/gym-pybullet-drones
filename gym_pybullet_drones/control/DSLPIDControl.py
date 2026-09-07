@@ -249,7 +249,7 @@ class DSLPIDControl(BaseControl):
         """
         cur_rotation = np.array(p.getMatrixFromQuaternion(cur_quat)).reshape(3, 3)
         cur_rpy = np.array(p.getEulerFromQuaternion(cur_quat))
-        target_quat = (Rotation.from_euler('XYZ', target_euler, degrees=False)).as_quat()
+        target_quat = (Rotation.from_euler('ZYX', target_euler[::-1], degrees=False)).as_quat()
         w,x,y,z = target_quat
         target_rotation = (Rotation.from_quat([w, x, y, z])).as_matrix()
         rot_matrix_e = np.dot((target_rotation.transpose()),cur_rotation) - np.dot(cur_rotation.transpose(),target_rotation)

@@ -230,7 +230,7 @@ class BaseRLAviary(BaseAviary):
                 rpm[k, :] = self.ctrl[k]._dslPIDAttitudeControl(control_timestep=self.CTRL_TIMESTEP,
                                                         thrust=target[3] * 18022 + 34406,  # from 25% to 80%
                                                         cur_quat=state[3:7],
-                                                        target_euler=np.array([target[0], target[1], state[2]]) * np.pi / 6,  # +- 30 degrees
+                                                        target_euler=np.array([target[0], target[1], 0.0]) * np.pi / 18,  # +- 10 degrees
                                                         target_rpy_rates=np.zeros(3))
             elif self.ACT_TYPE == ActionType.ONE_D_RPM:
                 rpm[k,:] = np.repeat(self.HOVER_RPM * (1+0.05*target), 4)
