@@ -72,7 +72,7 @@ class BaseRLAviary(BaseAviary):
         self.OBS_TYPE = obs
         self.ACT_TYPE = act
         #### Create integrated controllers #########################
-        if act in [ActionType.PID, ActionType.VEL, ActionType.ONE_D_PID]:
+        if act in [ActionType.PID, ActionType.VEL, ActionType.RPYT, ActionType.ONE_D_PID]:
             os.environ['KMP_DUPLICATE_LIB_OK']='True'
             if drone_model in [DroneModel.CF2X, DroneModel.CF2P]:
                 self.ctrl = [DSLPIDControl(drone_model=DroneModel.CF2X) for i in range(num_drones)]
@@ -142,7 +142,7 @@ class BaseRLAviary(BaseAviary):
             A Box of size NUM_DRONES x 4, 3, or 1, depending on the action type.
 
         """
-        if self.ACT_TYPE in [ActionType.RPM, ActionType.VEL]:
+        if self.ACT_TYPE in [ActionType.RPM, ActionType.VEL, ActionType.RPYT]:
             size = 4
         elif self.ACT_TYPE==ActionType.PID:
             size = 3
@@ -225,6 +225,13 @@ class BaseRLAviary(BaseAviary):
                                                         target_vel=self.SPEED_LIMIT * np.abs(target[3]) * v_unit_vector # target the desired velocity vector
                                                         )
                 rpm[k,:] = temp
+            elif self.ACT_TYPE == ActionType.RPYT:
+                state = self._getDroneStateVector(k)
+                rpm[k, :] = self.ctrl[k]._dslPIDAttitudeControl(control_timestep=self.CTRL_TIMESTEP,
+                                                        thrust=target[3] * 18022 + 34406,  # from 25% to 80%
+                                                        cur_quat=state[3:7],
+                                                        target_euler=np.array([target[0], target[1], state[2]]) * np.pi / 6,  # +- 30 degrees
+                                                        target_rpy_rates=np.zeros(3))
             elif self.ACT_TYPE == ActionType.ONE_D_RPM:
                 rpm[k,:] = np.repeat(self.HOVER_RPM * (1+0.05*target), 4)
             elif self.ACT_TYPE == ActionType.ONE_D_PID:
