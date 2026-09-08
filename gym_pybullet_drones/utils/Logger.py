@@ -173,7 +173,10 @@ class Logger(object):
             df["THRUST"+str(i)] = self.actions[i, 3]
             df["rew"+str(i)] = self.rewards[i]
 
-        df.to_csv(os.path.join(self.OUTPUT_FOLDER, "flight-data.csv"), index=False)
+        filename = "flight-data"
+        if comment:
+            filename += "-" + comment
+        df.to_csv(os.path.join(self.OUTPUT_FOLDER, filename + ".csv"), index=False)
 
     ################################################################################
     
