@@ -3,6 +3,7 @@ from datetime import datetime
 from cycler import cycler
 import numpy as np
 import matplotlib.pyplot as plt
+import pandas as pd
 
 os.environ['KMP_DUPLICATE_LIB_OK']='True'
 
@@ -147,66 +148,32 @@ class Logger(object):
             Added to the foldername.
 
         """
-        csv_dir = os.path.join(self.OUTPUT_FOLDER, "save-flight-"+comment+"-"+datetime.now().strftime("%m.%d.%Y_%H.%M.%S"))
-        if not os.path.exists(csv_dir):
-            os.makedirs(csv_dir+'/')
-        t = np.arange(0, self.timestamps.shape[1]/self.LOGGING_FREQ_HZ, 1/self.LOGGING_FREQ_HZ)
+        df = pd.DataFrame()
+        df["timestamps"] = np.arange(0, self.timestamps.shape[1]/self.LOGGING_FREQ_HZ, 1/self.LOGGING_FREQ_HZ)
+
         for i in range(self.NUM_DRONES):
-            with open(csv_dir+"/x"+str(i)+".csv", 'wb') as out_file:
-                np.savetxt(out_file, np.transpose(np.vstack([t, self.states[i, 0, :]])), delimiter=",")
-            with open(csv_dir+"/y"+str(i)+".csv", 'wb') as out_file:
-                np.savetxt(out_file, np.transpose(np.vstack([t, self.states[i, 1, :]])), delimiter=",")
-            with open(csv_dir+"/z"+str(i)+".csv", 'wb') as out_file:
-                np.savetxt(out_file, np.transpose(np.vstack([t, self.states[i, 2, :]])), delimiter=",")
-            ####
-            with open(csv_dir+"/r"+str(i)+".csv", 'wb') as out_file:
-                np.savetxt(out_file, np.transpose(np.vstack([t, self.states[i, 6, :]])), delimiter=",")
-            with open(csv_dir+"/p"+str(i)+".csv", 'wb') as out_file:
-                np.savetxt(out_file, np.transpose(np.vstack([t, self.states[i, 7, :]])), delimiter=",")
-            with open(csv_dir+"/ya"+str(i)+".csv", 'wb') as out_file:
-                np.savetxt(out_file, np.transpose(np.vstack([t, self.states[i, 8, :]])), delimiter=",")
-            ####
-            with open(csv_dir+"/rr"+str(i)+".csv", 'wb') as out_file:
-                rdot = np.hstack([0, (self.states[i, 6, 1:] - self.states[i, 6, 0:-1]) * self.LOGGING_FREQ_HZ ])
-                np.savetxt(out_file, np.transpose(np.vstack([t, rdot])), delimiter=",")
-            with open(csv_dir+"/pr"+str(i)+".csv", 'wb') as out_file:
-                pdot = np.hstack([0, (self.states[i, 7, 1:] - self.states[i, 7, 0:-1]) * self.LOGGING_FREQ_HZ ])
-                np.savetxt(out_file, np.transpose(np.vstack([t, pdot])), delimiter=",")
-            with open(csv_dir+"/yar"+str(i)+".csv", 'wb') as out_file:
-                ydot = np.hstack([0, (self.states[i, 8, 1:] - self.states[i, 8, 0:-1]) * self.LOGGING_FREQ_HZ ])
-                np.savetxt(out_file, np.transpose(np.vstack([t, ydot])), delimiter=",")
-            ###
-            with open(csv_dir+"/vx"+str(i)+".csv", 'wb') as out_file:
-                np.savetxt(out_file, np.transpose(np.vstack([t, self.states[i, 3, :]])), delimiter=",")
-            with open(csv_dir+"/vy"+str(i)+".csv", 'wb') as out_file:
-                np.savetxt(out_file, np.transpose(np.vstack([t, self.states[i, 4, :]])), delimiter=",")
-            with open(csv_dir+"/vz"+str(i)+".csv", 'wb') as out_file:
-                np.savetxt(out_file, np.transpose(np.vstack([t, self.states[i, 5, :]])), delimiter=",")
-            ####
-            with open(csv_dir+"/wx"+str(i)+".csv", 'wb') as out_file:
-                np.savetxt(out_file, np.transpose(np.vstack([t, self.states[i, 9, :]])), delimiter=",")
-            with open(csv_dir+"/wy"+str(i)+".csv", 'wb') as out_file:
-                np.savetxt(out_file, np.transpose(np.vstack([t, self.states[i, 10, :]])), delimiter=",")
-            with open(csv_dir+"/wz"+str(i)+".csv", 'wb') as out_file:
-                np.savetxt(out_file, np.transpose(np.vstack([t, self.states[i, 11, :]])), delimiter=",")
-            ####
-            with open(csv_dir+"/rpm0-"+str(i)+".csv", 'wb') as out_file:
-                np.savetxt(out_file, np.transpose(np.vstack([t, self.states[i, 12, :]])), delimiter=",")
-            with open(csv_dir+"/rpm1-"+str(i)+".csv", 'wb') as out_file:
-                np.savetxt(out_file, np.transpose(np.vstack([t, self.states[i, 13, :]])), delimiter=",")
-            with open(csv_dir+"/rpm2-"+str(i)+".csv", 'wb') as out_file:
-                np.savetxt(out_file, np.transpose(np.vstack([t, self.states[i, 14, :]])), delimiter=",")
-            with open(csv_dir+"/rpm3-"+str(i)+".csv", 'wb') as out_file:
-                np.savetxt(out_file, np.transpose(np.vstack([t, self.states[i, 15, :]])), delimiter=",")
-            ####
-            with open(csv_dir+"/pwm0-"+str(i)+".csv", 'wb') as out_file:
-                np.savetxt(out_file, np.transpose(np.vstack([t, (self.states[i, 12, :] - 4070.3) / 0.2685])), delimiter=",")
-            with open(csv_dir+"/pwm1-"+str(i)+".csv", 'wb') as out_file:
-                np.savetxt(out_file, np.transpose(np.vstack([t, (self.states[i, 13, :] - 4070.3) / 0.2685])), delimiter=",")
-            with open(csv_dir+"/pwm2-"+str(i)+".csv", 'wb') as out_file:
-                np.savetxt(out_file, np.transpose(np.vstack([t, (self.states[i, 14, :] - 4070.3) / 0.2685])), delimiter=",")
-            with open(csv_dir+"/pwm3-"+str(i)+".csv", 'wb') as out_file:
-                np.savetxt(out_file, np.transpose(np.vstack([t, (self.states[i, 15, :] - 4070.3) / 0.2685])), delimiter=",")
+            df["x"+str(i)] = self.obs[i, 0]
+            df["y"+str(i)] = self.obs[i, 1]
+            df["z"+str(i)] = self.obs[i, 2]
+            df["r"+str(i)] = self.obs[i, 3]
+            df["p"+str(i)] = self.obs[i, 4]
+            df["ya"+str(i)] = self.obs[i, 5]
+            df["vx"+str(i)] = self.obs[i, 6]
+            df["vy"+str(i)] = self.obs[i, 7]
+            df["vz"+str(i)] = self.obs[i, 8]
+            df["wx"+str(i)] = self.obs[i, 9]
+            df["wy"+str(i)] = self.obs[i, 10]
+            df["wz"+str(i)] = self.obs[i, 11]
+            df["rr"+str(i)] = np.hstack([0, (self.obs[i, 3, 1:] - self.obs[i, 3, 0:-1]) * self.LOGGING_FREQ_HZ])
+            df["pr"+str(i)] = np.hstack([0, (self.obs[i, 4, 1:] - self.obs[i, 4, 0:-1]) * self.LOGGING_FREQ_HZ])
+            df["yar"+str(i)] = np.hstack([0, (self.obs[i, 5, 1:] - self.obs[i, 5, 0:-1]) * self.LOGGING_FREQ_HZ])
+            df["ROLL"+str(i)] = self.actions[i, 0]
+            df["PITCH"+str(i)] = self.actions[i, 1]
+            df["YAW"+str(i)] = self.actions[i, 2]
+            df["THRUST"+str(i)] = self.actions[i, 3]
+            df["rew"+str(i)] = self.rewards[i]
+
+        df.to_csv(os.path.join(self.OUTPUT_FOLDER, "flight-data.csv"), index=False)
 
     ################################################################################
     
