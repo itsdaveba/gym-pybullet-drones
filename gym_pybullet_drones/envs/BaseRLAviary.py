@@ -280,7 +280,7 @@ class BaseRLAviary(BaseAviary):
             #### Observation vector ### X        Y        Z       Q1   Q2   Q3   Q4   R       P       Y       VX       VY       VZ       WX       WY       WZ
             lo = -np.inf
             hi = np.inf
-            obs_lower_bound = np.array([[lo,lo,0, lo,lo,lo,lo,lo,lo,lo,lo,lo] for i in range(self.NUM_DRONES)], dtype=np.float32)
+            obs_lower_bound = np.array([[lo,lo,lo,lo,lo,lo,lo,lo,lo,lo,lo,lo] for i in range(self.NUM_DRONES)], dtype=np.float32)
             obs_upper_bound = np.array([[hi,hi,hi,hi,hi,hi,hi,hi,hi,hi,hi,hi] for i in range(self.NUM_DRONES)], dtype=np.float32)
             #### Add action buffer to observation space ################
             act_lo = -1
@@ -345,7 +345,7 @@ class BaseRLAviary(BaseAviary):
             for i in range(self.NUM_DRONES):
                 #obs = self._clipAndNormalizeState(self._getDroneStateVector(i))
                 obs = self._getDroneStateVector(i)
-                obs_12[i, :] = np.hstack([obs[0:3], obs[7:10], obs[10:13], obs[13:16]]).reshape(12,)
+                obs_12[i, :] = np.hstack([obs[0:3] - self.TARGET_POS, obs[7:10], obs[10:13], obs[13:16]]).reshape(12,)
             kin = np.array([obs_12[i, :] for i in range(self.NUM_DRONES)]).astype('float32')
             #### Add action buffer to observation #######################
             for i in range(self.ACTION_BUFFER_SIZE):

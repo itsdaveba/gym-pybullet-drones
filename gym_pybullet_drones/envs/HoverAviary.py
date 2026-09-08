@@ -52,7 +52,7 @@ class HoverAviary(BaseRLAviary):
             The type of action space (1 or 3D; RPMS, thurst and torques, or waypoint with PID control)
 
         """
-        self.TARGET_POS = np.array([0,0,1]) if target_pos is None else target_pos
+        self.TARGET_POS = np.array([0.0, 0.0, 0.0]) if target_pos is None else target_pos
         self.EPISODE_LEN_SEC = 8
         super().__init__(drone_model=drone_model,
                          num_drones=num_drones,
@@ -71,7 +71,7 @@ class HoverAviary(BaseRLAviary):
 
     ################################################################################
     
-    def _computeReward(self):
+    def _computeReward(self, obs):
         """Computes the current reward value.
 
         Returns
@@ -80,11 +80,21 @@ class HoverAviary(BaseRLAviary):
             The reward.
 
         """
-        state = np.array([self._getDroneStateVector(i) for i in range(self.NUM_DRONES)])
-        ret = 1.0 - np.linalg.norm(self.TARGET_POS - state[:, 0:3], axis=1)
+        pos = obs[:, 0:3]
+        rpy = obs[:, 3:6]
+        vel = obs[:, 6:9]
+        ang_v = obs[:, 9:12]
+
+        r_pos = np.linalg.norm(pos, axis=1)
+        r_rpy = np.linalg.norm(rpy) ** 2
+        r_vel = np.linalg.norm(vel) ** 2
+        r_ang_v = np.linalg.norm(ang_v) ** 2
+
+        reward = 1.0 - 1.0 * r_pos - 0.5 * r_rpy
+
         if self.NUM_DRONES == 1:
-            return ret[0]
-        return ret
+            return reward[0]
+        return reward
 
     ################################################################################
     
@@ -115,7 +125,7 @@ class HoverAviary(BaseRLAviary):
         ret = []
         for i in range(self.NUM_DRONES):
             state = self._getDroneStateVector(i)
-            if (abs(state[0]) > 1.5 or abs(state[1]) > 1.5 or state[2] < 0.0 or state[2] > 2.0 # Truncate when the drone is too far away
+            if (abs(state[0]) > 1.5 or abs(state[1]) > 1.5 or abs(state[2]) > 1.5  # Truncate when the drone is too far away
                 or abs(state[7]) > .4 or abs(state[8]) > .4 # Truncate when the drone is too tilted
             ):
                 ret.append(True)

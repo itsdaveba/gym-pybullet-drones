@@ -247,7 +247,7 @@ class Logger(object):
             axs[row, col].plot(t, self.obs[j, 2, :], label="drone_"+str(j))
         axs[row, col].set_xlabel('time')
         axs[row, col].set_ylabel('z (m)')
-        axs[row, col].set_ylim([0.0, 1.0])
+        axs[row, col].set_ylim([-0.5, 0.5])
 
         #### RPY ###################################################
         row = 3
