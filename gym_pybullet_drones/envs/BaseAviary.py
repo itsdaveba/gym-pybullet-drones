@@ -499,6 +499,12 @@ class BaseAviary(gym.Env):
                                               flags = p.URDF_USE_INERTIA_FROM_FILE,
                                               physicsClientId=self.CLIENT
                                               ) for i in range(self.NUM_DRONES)])
+        #### Update context
+        if self.CONTEXT_LOW is not None and self.CONTEXT_HIGH is not None:
+            self.M = np.random.uniform(self.CONTEXT_LOW, self.CONTEXT_HIGH)
+            J = np.array([[1.40e-05, 0.00e+00, 0.00e+00], [0.00e+00, 1.40e-05, 0.00e+00], [0.00e+00, 0.00e+00, 2.17e-05]])
+            self.J = J * self.M / 0.027
+            self.J_INV = np.linalg.inv(self.J)
         for i in range(self.NUM_DRONES):
             p.setCollisionFilterGroupMask(self.DRONE_IDS[i], -1, 0, 0, physicsClientId=self.CLIENT)
             p.changeDynamics(self.DRONE_IDS[i], -1, mass=self.M, localInertiaDiagonal=np.diag(self.J), physicsClientId=self.CLIENT)

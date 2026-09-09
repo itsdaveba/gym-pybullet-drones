@@ -27,7 +27,10 @@ class BaseRLAviary(BaseAviary):
                  record=False,
                  obs: ObservationType=ObservationType.KIN,
                  act: ActionType=ActionType.RPM,
-                 mass=None
+                 mass=None,
+                 visible_context=False,
+                 context_low=None,
+                 context_high=None
                  ):
         """Initialization of a generic single and multi-agent RL environment.
 
@@ -78,6 +81,10 @@ class BaseRLAviary(BaseAviary):
                 self.ctrl = [DSLPIDControl(drone_model=DroneModel.CF2X) for i in range(num_drones)]
             else:
                 print("[ERROR] in BaseRLAviary.__init()__, no controller is available for the specified drone_model")
+        #### Context
+        self.VISIBLE_CONTEXT = visible_context
+        self.CONTEXT_LOW = context_low
+        self.CONTEXT_HIGH = context_high
         super().__init__(drone_model=drone_model,
                          num_drones=num_drones,
                          neighbourhood_radius=neighbourhood_radius,
@@ -282,6 +289,10 @@ class BaseRLAviary(BaseAviary):
             hi = np.inf
             obs_lower_bound = np.array([[lo,lo,lo,lo,lo,lo,lo,lo,lo,lo,lo,lo] for i in range(self.NUM_DRONES)], dtype=np.float32)
             obs_upper_bound = np.array([[hi,hi,hi,hi,hi,hi,hi,hi,hi,hi,hi,hi] for i in range(self.NUM_DRONES)], dtype=np.float32)
+            #### Add context to observation space
+            if self.VISIBLE_CONTEXT:
+                obs_lower_bound = np.hstack([obs_lower_bound, np.array([[lo] for i in range(self.NUM_DRONES)])], dtype=np.float32)
+                obs_upper_bound = np.hstack([obs_upper_bound, np.array([[hi] for i in range(self.NUM_DRONES)])], dtype=np.float32)
             #### Add action buffer to observation space ################
             act_lo = -1
             act_hi = +1
@@ -347,6 +358,9 @@ class BaseRLAviary(BaseAviary):
                 obs = self._getDroneStateVector(i)
                 obs_12[i, :] = np.hstack([obs[0:3] - self.TARGET_POS, obs[7:10], obs[10:13], obs[13:16]]).reshape(12,)
             kin = np.array([obs_12[i, :] for i in range(self.NUM_DRONES)]).astype('float32')
+            #### Add context
+            if self.VISIBLE_CONTEXT:
+                kin = np.hstack([kin, np.array([[self.M] for j in range(self.NUM_DRONES)])])
             #### Add action buffer to observation #######################
             for i in range(self.ACTION_BUFFER_SIZE):
                 kin = np.hstack([kin, np.array([self.action_buffer[i][j, :] for j in range(self.NUM_DRONES)])])
