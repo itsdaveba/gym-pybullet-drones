@@ -129,15 +129,17 @@ class Logger(object):
 
     ################################################################################
 
-    def save(self):
-        """Save the logs to file.
-        """
-        with open(os.path.join(self.OUTPUT_FOLDER, "save-flight-"+datetime.now().strftime("%m.%d.%Y_%H.%M.%S")+".npy"), 'wb') as out_file:
-            np.savez(out_file, timestamps=self.timestamps, states=self.states, controls=self.controls)
+    def load(self, filename):
+        with np.load(os.path.join(self.OUTPUT_FOLDER, filename + ".npz")) as data:
+            self.timestamps = data["timestamps"]
+            self.obs = data["obs"]
+            self.actions = data["actions"]
+            self.rewards = data["rewards"]
+            self.NUM_DRONES = self.timestamps.shape[0]
 
     ################################################################################
 
-    def save_as_csv(self,
+    def save(self,
                     comment: str=""
                     ):
         """Save the logs---on your Desktop---as comma separated values.
@@ -178,9 +180,12 @@ class Logger(object):
             filename += "-" + comment
         df.to_csv(os.path.join(self.OUTPUT_FOLDER, filename + ".csv"), index=False)
 
+        with open(os.path.join(self.OUTPUT_FOLDER, filename + ".npz"), "wb") as file:
+            np.savez(file, timestamps=self.timestamps, obs=self.obs, actions=self.actions, rewards=self.rewards)
+
     ################################################################################
     
-    def plot(self, pwm=False):
+    def plot(self, show=False, pwm=False):
         """Logs entries for a single simulation step, of a single drone.
 
         Parameters
