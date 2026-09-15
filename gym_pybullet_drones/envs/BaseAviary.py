@@ -39,6 +39,7 @@ class BaseAviary(gym.Env):
                  user_debug_gui=True,
                  vision_attributes=False,
                  output_folder='results',
+                 context_visible=None,
                  context_kwargs=None,
                  context_low=None,
                  context_high=None,
@@ -220,7 +221,8 @@ class BaseAviary(gym.Env):
             self.INIT_ANGLE = 45.0 * np.pi / 180.0  # 45 degrees in rads
         else:
             self.INIT_ANGLE = initial_angle * np.pi / 180.0  # degrees to rads
-        #### Context
+        #### Context ###############################################
+        self.CONTEXT_VISIBLE = context_visible if context_visible is not None else []
         self.CONTEXT_KWARGS = context_kwargs if context_kwargs is not None else []
         self.CONTEXT_LOW = context_low if context_low is not None else []
         self.CONTEXT_HIGH = context_high if context_high is not None else []
