@@ -20,6 +20,7 @@ class BaseRLAviary(BaseAviary):
                  initial_xyzs=None,
                  initial_rpys=None,
                  initial_spawn=None,
+                 initial_angle=None,
                  physics: Physics=Physics.PYB,
                  pyb_freq: int = 240,
                  ctrl_freq: int = 240,
@@ -27,8 +28,7 @@ class BaseRLAviary(BaseAviary):
                  record=False,
                  obs: ObservationType=ObservationType.KIN,
                  act: ActionType=ActionType.RPM,
-                 mass=None,
-                 visible_context=False,
+                 context_kwargs=None,
                  context_low=None,
                  context_high=None
                  ):
@@ -81,16 +81,13 @@ class BaseRLAviary(BaseAviary):
                 self.ctrl = [DSLPIDControl(drone_model=DroneModel.CF2X) for i in range(num_drones)]
             else:
                 print("[ERROR] in BaseRLAviary.__init()__, no controller is available for the specified drone_model")
-        #### Context
-        self.VISIBLE_CONTEXT = visible_context
-        self.CONTEXT_LOW = context_low
-        self.CONTEXT_HIGH = context_high
         super().__init__(drone_model=drone_model,
                          num_drones=num_drones,
                          neighbourhood_radius=neighbourhood_radius,
                          initial_xyzs=initial_xyzs,
                          initial_rpys=initial_rpys,
                          initial_spawn=initial_spawn,
+                         initial_angle=initial_angle,
                          physics=physics,
                          pyb_freq=pyb_freq,
                          ctrl_freq=ctrl_freq,
@@ -99,7 +96,9 @@ class BaseRLAviary(BaseAviary):
                          obstacles=True, # Add obstacles for RGB observations and/or FlyThruGate
                          user_debug_gui=False, # Remove of RPM sliders from all single agent learning aviaries
                          vision_attributes=vision_attributes,
-                         mass=mass
+                         context_kwargs=context_kwargs,
+                         context_low=context_low,
+                         context_high=context_high
                          )
         #### Set a limit on the maximum target speed ###############
         if act == ActionType.VEL:
@@ -290,9 +289,9 @@ class BaseRLAviary(BaseAviary):
             obs_lower_bound = np.array([[lo,lo,lo,lo,lo,lo,lo,lo,lo,lo,lo,lo] for i in range(self.NUM_DRONES)], dtype=np.float32)
             obs_upper_bound = np.array([[hi,hi,hi,hi,hi,hi,hi,hi,hi,hi,hi,hi] for i in range(self.NUM_DRONES)], dtype=np.float32)
             #### Add context to observation space
-            if self.VISIBLE_CONTEXT:
-                obs_lower_bound = np.hstack([obs_lower_bound, np.array([[lo] for i in range(self.NUM_DRONES)])], dtype=np.float32)
-                obs_upper_bound = np.hstack([obs_upper_bound, np.array([[hi] for i in range(self.NUM_DRONES)])], dtype=np.float32)
+            if self.CONTEXT_KWARGS:
+                obs_lower_bound = np.hstack([obs_lower_bound, np.array([[lo] * len(self.CONTEXT_KWARGS) for i in range(self.NUM_DRONES)])], dtype=np.float32)
+                obs_upper_bound = np.hstack([obs_upper_bound, np.array([[hi] * len(self.CONTEXT_KWARGS) for i in range(self.NUM_DRONES)])], dtype=np.float32)
             #### Add action buffer to observation space ################
             act_lo = -1
             act_hi = +1
@@ -359,8 +358,13 @@ class BaseRLAviary(BaseAviary):
                 obs_12[i, :] = np.hstack([obs[0:3] - self.TARGET_POS, obs[7:10], obs[10:13], obs[13:16]]).reshape(12,)
             kin = np.array([obs_12[i, :] for i in range(self.NUM_DRONES)]).astype('float32')
             #### Add context
-            if self.VISIBLE_CONTEXT:
-                kin = np.hstack([kin, np.array([[self.M] for j in range(self.NUM_DRONES)])])
+            for kwarg, low, high in zip(self.CONTEXT_KWARGS, self.CONTEXT_LOW, self.CONTEXT_HIGH):
+                if kwarg == "mass":
+                    kin = np.hstack([kin, np.array([[(2 * self.M - (high + low)) / (high - low)] for j in range(self.NUM_DRONES)])])
+                elif kwarg == "kf":
+                    kin = np.hstack([kin, np.array([[(2 * self.KF - (high + low)) / (high - low)] for j in range(self.NUM_DRONES)])])
+                elif kwarg == "km":
+                    kin = np.hstack([kin, np.array([[(2 * self.KM - (high + low)) / (high - low)] for j in range(self.NUM_DRONES)])])
             #### Add action buffer to observation #######################
             for i in range(self.ACTION_BUFFER_SIZE):
                 kin = np.hstack([kin, np.array([self.action_buffer[i][j, :] for j in range(self.NUM_DRONES)])])

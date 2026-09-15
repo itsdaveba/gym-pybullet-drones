@@ -15,6 +15,7 @@ class HoverAviary(BaseRLAviary):
                  initial_rpys=None,
                  target_pos=None,
                  initial_spawn=None,
+                 initial_angle=None,
                  physics: Physics=Physics.PYB,
                  pyb_freq: int = 240,
                  ctrl_freq: int = 30,
@@ -23,7 +24,7 @@ class HoverAviary(BaseRLAviary):
                  obs: ObservationType=ObservationType.KIN,
                  act: ActionType=ActionType.RPM,
                  mass=None,
-                 visible_context=False,
+                 context_kwargs=None,
                  context_low=None,
                  context_high=None
                  ):
@@ -62,6 +63,7 @@ class HoverAviary(BaseRLAviary):
                          initial_xyzs=initial_xyzs,
                          initial_rpys=initial_rpys,
                          initial_spawn=initial_spawn,
+                         initial_angle=initial_angle,
                          physics=physics,
                          pyb_freq=pyb_freq,
                          ctrl_freq=ctrl_freq,
@@ -69,8 +71,7 @@ class HoverAviary(BaseRLAviary):
                          record=record,
                          obs=obs,
                          act=act,
-                         mass=mass,
-                         visible_context=visible_context,
+                         context_kwargs=context_kwargs,
                          context_low=context_low,
                          context_high=context_high
                          )
