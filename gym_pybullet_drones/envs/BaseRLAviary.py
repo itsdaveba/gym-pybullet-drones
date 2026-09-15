@@ -30,7 +30,9 @@ class BaseRLAviary(BaseAviary):
                  act: ActionType=ActionType.RPM,
                  context_kwargs=None,
                  context_low=None,
-                 context_high=None
+                 context_high=None,
+                 context_low_gen=None,
+                 context_high_gen=None,
                  ):
         """Initialization of a generic single and multi-agent RL environment.
 
@@ -98,7 +100,9 @@ class BaseRLAviary(BaseAviary):
                          vision_attributes=vision_attributes,
                          context_kwargs=context_kwargs,
                          context_low=context_low,
-                         context_high=context_high
+                         context_high=context_high,
+                         context_low_gen=context_low_gen,
+                         context_high_gen=context_high_gen
                          )
         #### Set a limit on the maximum target speed ###############
         if act == ActionType.VEL:

@@ -41,7 +41,9 @@ class BaseAviary(gym.Env):
                  output_folder='results',
                  context_kwargs=None,
                  context_low=None,
-                 context_high=None
+                 context_high=None,
+                 context_low_gen=None,
+                 context_high_gen=None
                  ):
         """Initialization of a generic aviary environment.
 
@@ -222,6 +224,8 @@ class BaseAviary(gym.Env):
         self.CONTEXT_KWARGS = context_kwargs if context_kwargs is not None else []
         self.CONTEXT_LOW = context_low if context_low is not None else []
         self.CONTEXT_HIGH = context_high if context_high is not None else []
+        self.CONTEXT_LOW_GEN = context_low_gen if context_low_gen is not None else []
+        self.CONTEXT_HIGH_GEN = context_high_gen if context_high_gen is not None else []
         #### Create action and observation spaces ##################
         self.action_space = self._actionSpace()
         self.observation_space = self._observationSpace()
@@ -497,9 +501,7 @@ class BaseAviary(gym.Env):
         p.setRealTimeSimulation(0, physicsClientId=self.CLIENT)
         p.setTimeStep(self.PYB_TIMESTEP, physicsClientId=self.CLIENT)
         p.setAdditionalSearchPath(pybullet_data.getDataPath(), physicsClientId=self.CLIENT)
-        #### Load ground plane, drone and obstacles models #########
-        self.PLANE_ID = p.loadURDF("plane.urdf", physicsClientId=self.CLIENT)
-
+        #### Load drone and obstacles models #########
         self.DRONE_IDS = np.array([p.loadURDF(str(files('gym_pybullet_drones') / 'assets' / self.URDF),
                                               self.TARGET_POS + np.random.uniform(-self.INIT_SPAWN, self.INIT_SPAWN, 3),
                                               p.getQuaternionFromEuler(np.random.uniform(-self.INIT_ANGLE, self.INIT_ANGLE, 3) * [1.0, 1.0, 0.0]),
@@ -507,16 +509,16 @@ class BaseAviary(gym.Env):
                                               physicsClientId=self.CLIENT
                                               ) for i in range(self.NUM_DRONES)])
         #### Update context
-        for kwarg, low, high in zip(self.CONTEXT_KWARGS, self.CONTEXT_LOW, self.CONTEXT_HIGH):
+        for kwarg, low_gen, high_gen in zip(self.CONTEXT_KWARGS, self.CONTEXT_LOW_GEN, self.CONTEXT_HIGH_GEN):
             if kwarg == "mass":
-                self.M = np.random.uniform(low, high)
+                self.M = np.random.uniform(low_gen, high_gen)
                 J = np.array([[1.40e-05, 0.00e+00, 0.00e+00], [0.00e+00, 1.40e-05, 0.00e+00], [0.00e+00, 0.00e+00, 2.17e-05]])
                 self.J = J * self.M / 0.027
                 self.J_INV = np.linalg.inv(self.J)
             elif kwarg == "kf":
-                self.KF = np.random.uniform(low, high)
+                self.KF = np.random.uniform(low_gen, high_gen)
             elif kwarg == "km":
-                self.KM = np.random.uniform(low, high)
+                self.KM = np.random.uniform(low_gen, high_gen)
         for i in range(self.NUM_DRONES):
             p.setCollisionFilterGroupMask(self.DRONE_IDS[i], -1, 0, 0, physicsClientId=self.CLIENT)
             p.changeDynamics(self.DRONE_IDS[i], -1, mass=self.M, localInertiaDiagonal=np.diag(self.J), physicsClientId=self.CLIENT)

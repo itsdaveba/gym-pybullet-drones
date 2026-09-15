@@ -26,7 +26,9 @@ class HoverAviary(BaseRLAviary):
                  mass=None,
                  context_kwargs=None,
                  context_low=None,
-                 context_high=None
+                 context_high=None,
+                 context_low_gen=None,
+                 context_high_gen=None
                  ):
         """Initialization of a single agent RL environment.
 
@@ -73,7 +75,9 @@ class HoverAviary(BaseRLAviary):
                          act=act,
                          context_kwargs=context_kwargs,
                          context_low=context_low,
-                         context_high=context_high
+                         context_high=context_high,
+                         context_low_gen=context_low_gen,
+                         context_high_gen=context_high_gen
                          )
 
     ################################################################################
