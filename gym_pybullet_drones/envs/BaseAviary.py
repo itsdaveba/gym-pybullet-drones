@@ -219,9 +219,9 @@ class BaseAviary(gym.Env):
         else:
             self.INIT_ANGLE = initial_angle * np.pi / 180.0  # degrees to rads
         #### Context
-        self.CONTEXT_KWARGS = context_kwargs
-        self.CONTEXT_LOW = context_low
-        self.CONTEXT_HIGH = context_high
+        self.CONTEXT_KWARGS = context_kwargs if context_kwargs is not None else []
+        self.CONTEXT_LOW = context_low if context_low is not None else []
+        self.CONTEXT_HIGH = context_high if context_high is not None else []
         #### Create action and observation spaces ##################
         self.action_space = self._actionSpace()
         self.observation_space = self._observationSpace()
