@@ -367,11 +367,11 @@ class BaseRLAviary(BaseAviary):
             for visible, kwarg, low, high in zip(self.CONTEXT_VISIBLE, self.CONTEXT_KWARGS, self.CONTEXT_LOW, self.CONTEXT_HIGH):
                 if visible:
                     if kwarg == "mass":
-                        kin = np.hstack([kin, np.array([[(2 * self.M - (high + low)) / (high - low)] for j in range(self.NUM_DRONES)])])
+                        kin = np.hstack([kin, np.expand_dims((2 * self.M - (high + low)) / (high - low), axis=1)])
                     elif kwarg == "kf":
-                        kin = np.hstack([kin, np.array([[(2 * self.KF - (high + low)) / (high - low)] for j in range(self.NUM_DRONES)])])
+                        kin = np.hstack([kin, np.expand_dims((2 * self.KF - (high + low)) / (high - low), axis=1)])
                     elif kwarg == "km":
-                        kin = np.hstack([kin, np.array([[(2 * self.KM - (high + low)) / (high - low)] for j in range(self.NUM_DRONES)])])
+                        kin = np.hstack([kin, np.expand_dims((2 * self.KM - (high + low)) / (high - low), axis=1)])
             #### Add action buffer to observation #######################
             for i in range(self.ACTION_BUFFER_SIZE):
                 kin = np.hstack([kin, np.array([self.action_buffer[i][j, :] for j in range(self.NUM_DRONES)])])
