@@ -121,6 +121,12 @@ class BaseAviary(gym.Env):
         self.DW_COEFF_3 = self._parseURDFParameters()
         # print("[INFO] BaseAviary.__init__() loaded parameters from the drone's .urdf:\n[INFO] m {:f}, L {:f},\n[INFO] ixx {:f}, iyy {:f}, izz {:f},\n[INFO] kf {:e}, km {:e},\n[INFO] t2w {:f}, max_speed_kmh {:f},\n[INFO] gnd_eff_coeff {:f}, prop_radius {:f},\n[INFO] drag_xy_coeff {:f}, drag_z_coeff {:f},\n[INFO] dw_coeff_1 {:f}, dw_coeff_2 {:f}, dw_coeff_3 {:f}".format(
         #     self.M, self.L, self.J[0,0], self.J[1,1], self.J[2,2], self.KF, self.KM, self.THRUST2WEIGHT_RATIO, self.MAX_SPEED_KMH, self.GND_EFF_COEFF, self.PROP_RADIUS, self.DRAG_COEFF[0], self.DRAG_COEFF[2], self.DW_COEFF_1, self.DW_COEFF_2, self.DW_COEFF_3))
+        #### Different context for each drone ######################
+        self.M = np.array([self.M] * self.NUM_DRONES)
+        self.J = np.array([self.J] * self.NUM_DRONES)
+        self.J_INV = np.array([self.J_INV] * self.NUM_DRONES)
+        self.KF = np.array([self.KF] * self.NUM_DRONES)
+        self.KM = np.array([self.KM] * self.NUM_DRONES)
         #### Compute constants #####################################
         self.GRAVITY = self.G*self.M
         self.HOVER_RPM = np.sqrt(self.GRAVITY / (4*self.KF))
@@ -513,17 +519,17 @@ class BaseAviary(gym.Env):
         #### Update context
         for kwarg, low_gen, high_gen in zip(self.CONTEXT_KWARGS, self.CONTEXT_LOW_GEN, self.CONTEXT_HIGH_GEN):
             if kwarg == "mass":
-                self.M = np.random.uniform(low_gen, high_gen)
+                self.M = np.random.uniform(low_gen, high_gen, size=self.NUM_DRONES)
                 J = np.array([[1.40e-05, 0.00e+00, 0.00e+00], [0.00e+00, 1.40e-05, 0.00e+00], [0.00e+00, 0.00e+00, 2.17e-05]])
-                self.J = J * self.M / 0.027
+                self.J = np.array([J * m / 0.027 for m in self.M])
                 self.J_INV = np.linalg.inv(self.J)
             elif kwarg == "kf":
-                self.KF = np.random.uniform(low_gen, high_gen)
+                self.KF = np.random.uniform(low_gen, high_gen, size=self.NUM_DRONES)
             elif kwarg == "km":
-                self.KM = np.random.uniform(low_gen, high_gen)
+                self.KM = np.random.uniform(low_gen, high_gen, size=self.NUM_DRONES)
         for i in range(self.NUM_DRONES):
             p.setCollisionFilterGroupMask(self.DRONE_IDS[i], -1, 0, 0, physicsClientId=self.CLIENT)
-            p.changeDynamics(self.DRONE_IDS[i], -1, mass=self.M, localInertiaDiagonal=np.diag(self.J), physicsClientId=self.CLIENT)
+            p.changeDynamics(self.DRONE_IDS[i], -1, mass=self.M[i], localInertiaDiagonal=np.diag(self.J[i]), physicsClientId=self.CLIENT)
         #### Remove default damping #################################
         # for i in range(self.NUM_DRONES):
         #     p.changeDynamics(self.DRONE_IDS[i], -1, linearDamping=0, angularDamping=0)
@@ -725,8 +731,8 @@ class BaseAviary(gym.Env):
             The ordinal number/position of the desired drone in list self.DRONE_IDS.
 
         """
-        forces = np.array(rpm**2)*self.KF
-        torques = np.array(rpm**2)*self.KM
+        forces = np.array(rpm**2)*self.KF[nth_drone]
+        torques = np.array(rpm**2)*self.KM[nth_drone]
         if self.DRONE_MODEL == DroneModel.RACE:
             torques = -torques
         z_torque = (-torques[0] + torques[1] - torques[2] + torques[3])
