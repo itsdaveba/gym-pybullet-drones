@@ -98,9 +98,9 @@ class HoverAviary(BaseRLAviary):
         ang_v = obs[:, 9:12]
 
         r_pos = np.linalg.norm(pos, axis=1)
-        r_rpy = np.linalg.norm(rpy) ** 2
-        r_vel = np.linalg.norm(vel) ** 2
-        r_ang_v = np.linalg.norm(ang_v) ** 2
+        r_rpy = np.linalg.norm(rpy, axis=1) ** 2
+        r_vel = np.linalg.norm(vel, axis=1) ** 2
+        r_ang_v = np.linalg.norm(ang_v, axis=1) ** 2
 
         reward = 1.0 - 1.0 * r_pos - 0.5 * r_rpy
 
