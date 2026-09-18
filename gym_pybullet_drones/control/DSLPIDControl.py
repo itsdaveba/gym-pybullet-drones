@@ -47,7 +47,7 @@ class DSLPIDControl(BaseControl):
         self.D_COEFF_TOR = np.array([20000., 20000., 12000.])
         self.PWM2RPM_SCALE = 0.2685
         self.PWM2RPM_CONST = 4070.3
-        self.MIN_PWM = 20000
+        self.MIN_PWM = 10000
         self.MAX_PWM = 65535
         if self.DRONE_MODEL == DroneModel.CF2X:
             self.MIXER_MATRIX = np.array([ 
